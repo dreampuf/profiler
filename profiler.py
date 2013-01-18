@@ -23,7 +23,7 @@ try:
 except ImportError:
     sys.stderr.write("`pip install objgraph` first please\n")
 
-__all__ = ["line_profiler","memory_profiler","draw_it"]
+__all__ = ["line_profiler","memory_profiler","draw_it", "lprofiler", "mprofiler"]
 
 lprofiler = LineProfiler()
 def line_profiler(func):
@@ -82,7 +82,12 @@ class TestCase(unittest.TestCase):
             b = [{"a": 123}] * 1024 * 1024 * 20
             c = [0] * 1024 * 1024
             del b
-            time.sleep(2)
+            def innerfunc():
+                time.sleep(1)
+                return 1
+                
+            c = innerfunc()
+            time.sleep(1)
         self.f = test_fun
 
     def test_draw_it(self):
@@ -95,9 +100,16 @@ class TestCase(unittest.TestCase):
         lp = line_profiler(self.f)
         lp()
 
+
+
     def test_memory_profiler(self):
         mp = memory_profiler(self.f)
         mp()
+        
+        @memory_profiler
+        def g():
+            return eval(repr(dict([(i, i) for i in xrange(1000)])))
+        g()
 
 if __name__ == "__main__":
     unittest.main()
